@@ -4,11 +4,11 @@ function gitj() {
 
 if [ $# -eq 0 ]
 then
-	echo "Tracks git repos and allows easy jumping to the local repository directories"
+	echo "GitJump: Tracks git repos and allows easy jumping to the local repository directories"
 	echo "Usage: gitj [list] [add REPONAME REPODIR] [remove REPONAME]"
 	echo "-----------------------------------------------------------"
 	echo "list: list all defined repos"
-	echo "add: add a repo to the list"
+	echo "add: add a repo to the list (supports relative paths)"
 	echo "remove: remove a repo from the list"
 	return 0
 fi
@@ -20,27 +20,73 @@ then
 fi
 touch "$config_file_dir"
 
-
-local temp=$(sort -u -k1,1 "$config_file_dir")
-echo "$temp" > "$config_file_dir"
-local repo_name_list=$(cut -f 1 $config_file_dir)
-local repo_dir_list=$(cut -f 2 $config_file_dir)
-
-# JUMPING
+# LISTING OR JUMPING
 if [ $# -eq 1 ]
 then
-	local target_repo_name=$1
-	local repo_name_occurrence=$(cat "$config_file_dir" | egrep "$target_repo_name")
-	if [ -z "$repo_name_occurrence" ]
-	then
-		echo "Error: Repository name not found"
-		return 1
-	fi
+	case $1 in
+		list)
+			cat $config_file_dir
+			return 0	
+			;;
+		*)
+			local target_repo_name=$1
+			local repo_name_occurrence=$(cat "$config_file_dir" | egrep "^$target_repo_name")
+			if [ -z "$repo_name_occurrence" ]
+			then
+				echo "Error: Repository name not found"
+				return 1
+			fi
 
-	local repo_directory=$(echo "$repo_name_occurrence" | cut -f 2)
-	cd $repo_directory
-	return 0
+			local repo_directory=$(echo "$repo_name_occurrence" | egrep -o '[^ ]*$')
+			cd $repo_directory
+			return 0
+			;;
+	esac
 fi
+
+
+#ADDING OR REMOVING
+local operation=$1
+local repo_name_list=$(cut -f 1 $config_file_dir)
+local repo_dir_list=$(cut -f 2 $config_file_dir)
+case $operation in
+	add)
+		if [ $# -lt 3 ]
+		then
+			echo "Error: Too few arguments"
+			return 1
+		fi
+
+		local repo_name=$2
+		local target_dir=$3
+
+		if ! [ -d "$target_dir" ]
+		then
+			echo "Error: Unable to locate repo directory"
+			return 1
+		fi		
+
+		local temp=$(egrep -v "$repo_name" $config_file_dir)
+		echo "$temp" > "$config_file_dir"
+		
+		local abs_target_dir=$(cd $target_dir; pwd)
+		printf "%-50s %s\n" "$repo_name" "$abs_target_dir" >> $config_file_dir
+
+		return 1
+		;;
+	remove)
+		for marked_repo in "${@:2}"
+		do
+			local temp=$(egrep -v "$marked_repo" $config_file_dir)
+			echo "$temp" > "$config_file_dir"
+		done
+		;;
+
+	*)
+		echo "Error: Invalid operation"
+		return 1
+		;;
+esac
 
 
 }
