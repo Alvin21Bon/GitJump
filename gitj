@@ -10,10 +10,10 @@ then
 	echo "list: list all defined repos"
 	echo "add: add a repo to the list"
 	echo "remove: remove a repo from the list"
-	exit 0
+	return 0
 fi
 
-config_file_dir=$HOME/.config/gitj/list
+local config_file_dir=$HOME/.config/gitj/list
 if ! [ -d "$HOME/.config/gitj" ]
 then
 	mkdir "$HOME/.config/gitj"
@@ -21,27 +21,26 @@ fi
 touch "$config_file_dir"
 
 
-temp=$(sort -u -k1,1 "$config_file_dir")
+local temp=$(sort -u -k1,1 "$config_file_dir")
 echo "$temp" > "$config_file_dir"
-repo_name_list=$(cut -f 1 $config_file_dir)
-repo_dir_list=$(cut -f 2 $config_file_dir)
+local repo_name_list=$(cut -f 1 $config_file_dir)
+local repo_dir_list=$(cut -f 2 $config_file_dir)
 
 # JUMPING
 if [ $# -eq 1 ]
 then
-	target_repo_name=$1
-	repo_name_occurrence=$(cat "$config_file_dir" | egrep "$target_repo_name")
+	local target_repo_name=$1
+	local repo_name_occurrence=$(cat "$config_file_dir" | egrep "$target_repo_name")
 	if [ -z "$repo_name_occurrence" ]
 	then
 		echo "Error: Repository name not found"
-		exit 1
+		return 1
 	fi
 
-	repo_directory=$(echo "$repo_name_occurrence" | cut -f 2)
+	local repo_directory=$(echo "$repo_name_occurrence" | cut -f 2)
 	cd $repo_directory
-	exit 0
+	return 0
 fi
 
-operation=$1
 
 }
