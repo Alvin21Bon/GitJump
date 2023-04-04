@@ -1,3 +1,14 @@
 #!/bin/bash
 
-
+if [ $# -eq 0 ]
+then
+	echo "Tracks git repos and allows easy jumping to the local repository directories"
+	echo "Usage: gitj [list] [add REPONAME REPODIR] [remove REPONAME]"
+	echo "-----------------------------------------------------------"
+	echo "list: list all defined repos"
+	echo "add: add a repo to the list"
+	echo "remove: remove a repo from the list"
+	exit 0
+fi
+operation=$1
+config_file_dir=$HOME/.config/gitj
