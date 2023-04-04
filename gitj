@@ -10,5 +10,34 @@ then
 	echo "remove: remove a repo from the list"
 	exit 0
 fi
+
+config_file_dir=$HOME/.config/gitj/list
+if ! [ -d "$HOME/.config/gitj" ]
+then
+	mkdir "$HOME/.config/gitj"
+fi
+touch "$config_file_dir"
+
+
+temp=$(sort -u -k1,1 "$config_file_dir")
+echo "$temp" > "$config_file_dir"
+repo_name_list=$(cut -f 1 $config_file_dir)
+repo_dir_list=$(cut -f 2 $config_file_dir)
+
+# JUMPING
+if [ $# -eq 1 ]
+then
+	target_repo_name=$1
+	repo_name_occurences=$(echo "$repo_name_list" | egrep '$target_repo_name')
+
+	if [ -z $repo_name_occurences ]
+	then
+		echo "Error: Repository name not found"
+		exit 1
+	fi
+
+	repo_directory=$(echo "$repo_name_occurances" | cut -f 2 | head -n 1)
+fi
+
 operation=$1
-config_file_dir=$HOME/.config/gitj
+
