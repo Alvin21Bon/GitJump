@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#to use this script, you must go into your shell configuration file and add
+# -----------------------------------
+#	source PATH_TO_SCRIPT
+# -----------------------------------
+# this is done to enable the script to change the parent shell's working directory
+
+
+
+
 function gitj() {
 
 if [ $# -eq 0 ]
@@ -72,7 +81,7 @@ case $operation in
 		local abs_target_dir=$(cd $target_dir; pwd)
 		printf "%-50s %s\n" "$repo_name" "$abs_target_dir" >> $config_file_dir
 
-		return 1
+		return 0
 		;;
 	remove)
 		for marked_repo in "${@:2}"
@@ -80,6 +89,7 @@ case $operation in
 			local temp=$(egrep -v "$marked_repo" $config_file_dir)
 			echo "$temp" > "$config_file_dir"
 		done
+		return 0
 		;;
 
 	*)
