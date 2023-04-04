@@ -39,14 +39,14 @@ then
 			;;
 		*)
 			local target_repo_name=$1
-			local repo_name_occurrence=$(cat "$config_file_dir" | egrep "^$target_repo_name")
+			local repo_name_occurrence=$(cat "$config_file_dir" | egrep "^$target_repo_name ")
 			if [ -z "$repo_name_occurrence" ]
 			then
 				echo "Error: Repository name not found"
 				return 1
 			fi
 
-			local repo_directory=$(echo "$repo_name_occurrence" | egrep -o '[^ ]*$')
+			local repo_directory=$(echo "$repo_name_occurrence" | sed -nr 's/[^ ]* *([^ ].*)/\1/p')
 			cd $repo_directory
 			return 0
 			;;
@@ -56,8 +56,6 @@ fi
 
 #ADDING OR REMOVING
 local operation=$1
-local repo_name_list=$(cut -f 1 $config_file_dir)
-local repo_dir_list=$(cut -f 2 $config_file_dir)
 case $operation in
 	add)
 		if [ $# -lt 3 ]
@@ -75,7 +73,7 @@ case $operation in
 			return 1
 		fi		
 
-		local temp=$(egrep -v "$repo_name" $config_file_dir)
+		local temp=$(egrep -v "^$repo_name " $config_file_dir)
 		echo "$temp" > "$config_file_dir"
 		
 		local abs_target_dir=$(cd $target_dir; pwd)
@@ -86,7 +84,7 @@ case $operation in
 	remove)
 		for marked_repo in "${@:2}"
 		do
-			local temp=$(egrep -v "$marked_repo" $config_file_dir)
+			local temp=$(egrep -v "^$marked_repo " $config_file_dir)
 			echo "$temp" > "$config_file_dir"
 		done
 		return 0
