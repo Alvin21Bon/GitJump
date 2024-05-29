@@ -39,7 +39,7 @@ then
 			;;
 		*)
 			local target_repo_name=$1
-			local repo_name_occurrence=$(cat "$config_file_dir" | egrep "^$target_repo_name ")
+			local repo_name_occurrence=$(cat "$config_file_dir" | grep -E "^$target_repo_name ")
 			if [ -z "$repo_name_occurrence" ]
 			then
 				echo "Error: Repository name not found"
@@ -73,7 +73,7 @@ case $operation in
 			return 1
 		fi		
 
-		local temp=$(egrep -v "^$repo_name " $config_file_dir)
+		local temp=$(grep -E -v "^$repo_name " $config_file_dir)
 		echo "$temp" > "$config_file_dir"
 		
 		local abs_target_dir=$(cd $target_dir; pwd)
@@ -84,7 +84,7 @@ case $operation in
 	remove)
 		for marked_repo in "${@:2}"
 		do
-			local temp=$(egrep -v "^$marked_repo " $config_file_dir)
+			local temp=$(grep -E -v "^$marked_repo " $config_file_dir)
 			echo "$temp" > "$config_file_dir"
 		done
 		return 0
